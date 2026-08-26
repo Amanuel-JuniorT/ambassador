@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ambassador special customer cards
 
-## Getting Started
+Phase 1 desk: register special customers, print QR cards, and verify at checkout. SAP and CNET remain the systems of money and invoice.
 
-First, run the development server:
+The app lives in this folder (`ambassador/`).
+
+## Database
+
+**PostgreSQL** via Prisma. SQLite will not work on Vercel (no persistent disk). Use [Neon](https://neon.tech) (free, Vercel integration).
+
+You need two URLs from Neon:
+
+- **DATABASE_URL** — pooled (Prisma queries)
+- **DIRECT_URL** — direct / unpooled (migrations)
+
+On a free Neon project, if you only have one connection string, paste it in both.
+
+## Run locally
+
+1. Create a Neon project and copy the connection strings.
+2. Put them in `.env` (see `.env.example`).
+3. Then:
 
 ```bash
+cd ambassador
+npm install
+npx prisma generate
+npm run db:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Seed creates **one admin** from `.env` (`SEED_ADMIN_*`). It **wipes** users, sessions, and special customers first:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run db:seed
+```
 
-## Learn More
+Default (change in `.env`):
 
-To learn more about Next.js, take a look at the following resources:
+| Role  | Email               | Password              |
+|-------|---------------------|-----------------------|
+| Admin | admin@ambassador.et | Ambassador.Admin.2026 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Cashiers are created later in the Staff screen.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push the repo. In Vercel, set **Root Directory** to `ambassador`.
+2. Add the Neon integration, or paste env vars:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Name | Value |
+|------|--------|
+| `DATABASE_URL` | Neon pooled URL |
+| `DIRECT_URL` | Neon direct URL |
+| `BETTER_AUTH_SECRET` | Long random string (32+ chars) |
+| `BETTER_AUTH_URL` | `https://your-app.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` |
+
+3. Build already runs `prisma migrate deploy`. After the first successful deploy, seed **once** from your machine (this **clears** the DB then creates the admin from `SEED_ADMIN_*`):
+
+```bash
+cd ambassador
+npx prisma db seed
+```
+
+Use production `DATABASE_URL` / `DIRECT_URL` and the admin env vars when you do that. Do not re-run seed on a live DB with real data.
+
+Do not commit `.env`. Change `SEED_ADMIN_PASSWORD` before production.
+
+## Roles
+
+- **Admin** — staff users, register specials, print cards, directory, block/unblock, verify
+- **Cashier** — verify only
+
+## QR privacy
+
+The printed code is an opaque URL (`/c/<random>`). A normal camera opens a branded page with **no name, TIN, discount, or validity**. Only signed-in staff can look the token up.

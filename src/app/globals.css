@@ -1,26 +1,220 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #f1e6d2;
+  --ink-soft: #d8c7a8;
+  --paper: #141009;
+  --card: #221909;
+  --line: rgba(228, 196, 129, 0.16);
+  --line-strong: rgba(228, 196, 129, 0.32);
+  --gold: #c9a15c;
+  --gold-deep: #d9b871;
+  --gold-bright: #e9cd8e;
+  --gold-fill: rgba(228, 196, 129, 0.14);
+  --walnut-dark: #170f08;
+  --walnut: #3c2818;
+  --walnut-light: #5a3c22;
+  --green: #7bc79e;
+  --green-fill: rgba(47, 107, 79, 0.22);
+  --red: #e38f84;
+  --red-fill: rgba(166, 54, 44, 0.22);
+  --muted: #9c8b6c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.45);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-gold-bright: var(--gold-bright);
+  --color-muted: var(--muted);
+  --color-walnut: var(--walnut);
+  --color-walnut-dark: var(--walnut-dark);
+  --font-sans: var(--font-ibm-sans);
+  --font-mono: var(--font-ibm-mono);
+  --font-serif: var(--font-ibm-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ibm-sans), "IBM Plex Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+select,
+button,
+textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--walnut-dark);
+  background: var(--walnut-dark);
+  color: var(--gold-bright);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 11px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--walnut);
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.btn.secondary:hover:not(:disabled) {
+  background: var(--card);
+  border-color: var(--gold);
+}
+
+.btn.full {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+@media (min-width: 640px) {
+  .field input,
+  .field select {
+    font-size: 14px;
+  }
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.phase-tag {
+  font-family: var(--font-ibm-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--gold-deep);
+  background: var(--gold-fill);
+  border: 1px solid #dec28a;
+  padding: 5px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.section-note {
+  font-size: 12.5px;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  line-height: 1.55;
+}
+
+.section-note b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.id-card {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1.586 / 1;
+  border-radius: 13px;
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      100deg,
+      rgba(0, 0, 0, 0.1) 0px,
+      rgba(0, 0, 0, 0.1) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    repeating-linear-gradient(
+      96deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 2px,
+      transparent 2px,
+      transparent 9px
+    ),
+    linear-gradient(155deg, var(--walnut-light) 0%, var(--walnut) 45%, var(--walnut-dark) 100%);
+  box-shadow: var(--shadow), inset 0 0 0 1px rgba(228, 196, 129, 0.15);
+}
+
+.id-card .rail {
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: rgba(228, 196, 129, 0.35);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .print-only-cards {
+    background: #fff !important;
+  }
+  .id-card {
+    max-width: 85mm;
+    box-shadow: none;
+    break-inside: avoid;
+  }
 }
