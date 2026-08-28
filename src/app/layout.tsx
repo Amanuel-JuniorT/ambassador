@@ -25,8 +25,11 @@ export const metadata: Metadata = {
   description: "Identity and discount eligibility for Ambassador special customers.",
   robots: { index: false, follow: false },
   icons: {
-    icon: [{ url: "/icon.png?v=2", type: "image/png" }],
-    apple: [{ url: "/apple-icon.png?v=2" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-icon.png" }],
   },
 };
 
