@@ -24,6 +24,10 @@ export const metadata: Metadata = {
   title: "Ambassador — Special Customer Cards",
   description: "Identity and discount eligibility for Ambassador special customers.",
   robots: { index: false, follow: false },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/apple-icon.png" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
