@@ -1,33 +1,54 @@
 import sharp from "sharp";
 import path from "path";
 
+async function knockoutDark(buffer: Buffer) {
+  const { data, info } = await sharp(buffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const a = data[i + 3];
+    if (a < 40 || (r < 110 && g < 95)) {
+      data[i + 3] = 0;
+    }
+  }
+
+  return sharp(data, { raw: info }).png().toBuffer();
+}
+
+async function writePng(buffer: Buffer, size: number, dest: string) {
+  const resized = await sharp(buffer)
+    .resize(size, size, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png()
+    .toBuffer();
+  const cleaned = await knockoutDark(resized);
+  await sharp(cleaned).png().toFile(dest);
+}
+
 async function main() {
   const src = path.join(process.cwd(), "public", "ambassador-logo.png");
-  const image = sharp(src);
-  const meta = await image.metadata();
+  const meta = await sharp(src).metadata();
   const width = meta.width || 314;
   const height = meta.height || 210;
   const emblemHeight = Math.min(height, Math.round(width * 0.52));
 
-  const emblem = await sharp(src)
+  const cropped = await sharp(src)
     .extract({ left: 0, top: 0, width, height: emblemHeight })
     .png()
     .toBuffer();
 
-  const square = 512;
-  const padded = await sharp(emblem)
-    .resize({
-      width: Math.round(square * 0.78),
-      height: Math.round(square * 0.78),
+  const transparent = await knockoutDark(cropped);
+  const padded = await sharp(transparent)
+    .trim()
+    .resize(512, 512, {
       fit: "contain",
       background: { r: 0, g: 0, b: 0, alpha: 0 },
-    })
-    .extend({
-      top: Math.round(square * 0.11),
-      bottom: Math.round(square * 0.11),
-      left: Math.round(square * 0.11),
-      right: Math.round(square * 0.11),
-      background: { r: 20, g: 16, b: 9, alpha: 255 },
     })
     .png()
     .toBuffer();
@@ -35,12 +56,12 @@ async function main() {
   const appDir = path.join(process.cwd(), "src", "app");
   const publicDir = path.join(process.cwd(), "public");
 
-  await sharp(padded).resize(192, 192).png().toFile(path.join(appDir, "icon.png"));
-  await sharp(padded).resize(180, 180).png().toFile(path.join(appDir, "apple-icon.png"));
-  await sharp(padded).resize(192, 192).png().toFile(path.join(publicDir, "icon.png"));
-  await sharp(padded).resize(180, 180).png().toFile(path.join(publicDir, "apple-icon.png"));
+  await writePng(padded, 192, path.join(appDir, "icon.png"));
+  await writePng(padded, 180, path.join(appDir, "apple-icon.png"));
+  await writePng(padded, 192, path.join(publicDir, "icon.png"));
+  await writePng(padded, 180, path.join(publicDir, "apple-icon.png"));
 
-  console.log("Wrote icon.png and apple-icon.png");
+  console.log("Wrote transparent icon.png and apple-icon.png");
 }
 
 main();
