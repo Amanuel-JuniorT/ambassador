@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiAdmin } from "@/lib/api-auth";
 import { newCardToken, newDisplayId } from "@/lib/staff";
+import {
+  normalizeCustomerName,
+  normalizeDiscount,
+  normalizeTin,
+  normalizeValidThru,
+} from "@/lib/validate-customer";
 
 export async function GET(request: Request) {
   const admin = await requireApiAdmin();
@@ -48,34 +54,33 @@ export async function POST(request: Request) {
     validThru?: string;
   } | null;
 
-  const name = body?.name?.trim().toUpperCase() || "";
-  const tin = body?.tin?.trim() || "";
+  const nameResult = normalizeCustomerName(body?.name);
+  if (nameResult.error) {
+    return NextResponse.json({ error: nameResult.error }, { status: 400 });
+  }
+  const tinResult = normalizeTin(body?.tin);
+  if (tinResult.error) {
+    return NextResponse.json({ error: tinResult.error }, { status: 400 });
+  }
+  const validThruResult = normalizeValidThru(body?.validThru);
+  if (validThruResult.error) {
+    return NextResponse.json({ error: validThruResult.error }, { status: 400 });
+  }
+  const discountResult = normalizeDiscount(body?.discount);
+  if (discountResult.error) {
+    return NextResponse.json({ error: discountResult.error }, { status: 400 });
+  }
   const branch = body?.branch?.trim() || "HQ";
-  const discount = Number(body?.discount);
-  const validThru = body?.validThru?.trim() || "";
-
-  if (!name) {
-    return NextResponse.json({ error: "Enter a full name." }, { status: 400 });
-  }
-  if (tin && !/^[0-9]{6,15}$/.test(tin)) {
-    return NextResponse.json({ error: "TIN should be 6–15 digits, or leave it blank." }, { status: 400 });
-  }
-  if (validThru && !/^\d{2}\/\d{2}$/.test(validThru)) {
-    return NextResponse.json({ error: "Valid thru should be MM/YY." }, { status: 400 });
-  }
-  if (!Number.isInteger(discount) || discount < 1 || discount > 100) {
-    return NextResponse.json({ error: "Discount must be a whole number between 1 and 100." }, { status: 400 });
-  }
 
   const customer = await prisma.specialCustomer.create({
     data: {
       displayId: newDisplayId(),
       token: newCardToken(),
-      name,
-      tin: tin || null,
+      name: nameResult.name!,
+      tin: tinResult.tin,
       branch,
-      discount,
-      validThru: validThru || null,
+      discount: discountResult.discount!,
+      validThru: validThruResult.validThru,
       status: "ACTIVE",
       registeredById: admin.id,
     },
@@ -99,16 +104,38 @@ export async function PATCH(request: Request) {
   const body = (await request.json().catch(() => null)) as {
     id?: string;
     status?: "ACTIVE" | "BLOCKED";
+    name?: string;
   } | null;
 
-  if (!body?.id || (body.status !== "ACTIVE" && body.status !== "BLOCKED")) {
+  if (!body?.id) {
     return NextResponse.json({ error: "Invalid update." }, { status: 400 });
+  }
+
+  const data: { status?: "ACTIVE" | "BLOCKED"; name?: string } = {};
+
+  if (body.status === "ACTIVE" || body.status === "BLOCKED") {
+    data.status = body.status;
+  }
+  if (typeof body.name === "string") {
+    const nameResult = normalizeCustomerName(body.name);
+    if (nameResult.error) {
+      return NextResponse.json({ error: nameResult.error }, { status: 400 });
+    }
+    data.name = nameResult.name;
+  }
+
+  if (!data.status && !data.name) {
+    return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
   const customer = await prisma.specialCustomer.update({
     where: { id: body.id },
-    data: { status: body.status },
+    data,
   });
 
-  return NextResponse.json({ id: customer.id, status: customer.status });
+  return NextResponse.json({
+    id: customer.id,
+    status: customer.status,
+    name: customer.name,
+  });
 }

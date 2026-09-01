@@ -43,10 +43,10 @@ export function RegisterForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name,
-        tin,
+        name: name.trim(),
+        tin: tin.trim(),
         branch,
-        validThru,
+        validThru: validThru.trim(),
         discount: Number(discount),
       }),
     });

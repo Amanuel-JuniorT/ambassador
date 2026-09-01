@@ -203,18 +203,32 @@ a {
 }
 
 @media print {
+  html,
+  body {
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   .no-print {
     display: none !important;
   }
-  body {
-    background: #fff;
-  }
   .print-only-cards {
     background: #fff !important;
+    padding: 0 !important;
   }
   .id-card {
     max-width: 85mm;
     box-shadow: none;
     break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-tier {
+    font-size: 8pt !important;
+    letter-spacing: 0.14em !important;
+    color: #3c2818 !important;
+  }
+  .print-name {
+    color: #170f08 !important;
   }
 }

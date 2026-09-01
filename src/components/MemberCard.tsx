@@ -31,16 +31,16 @@ function FrontFace({
     <article className="id-card">
       <div className="rail" />
       <div className="absolute top-4 right-4 left-7 flex items-start justify-between gap-3">
-        <BrandMark className="h-11 w-auto sm:h-12" />
+        <BrandMark className="h-11 w-auto print:h-8 sm:h-12" />
         <span className="pt-1 font-mono text-[9px] tracking-[0.12em] text-[#b7a480]">
           EST. 2008
         </span>
       </div>
       <div className="absolute top-[48%] right-4 left-7 -translate-y-1/2">
-        <p className="m-0 font-mono text-[10px] tracking-[0.18em] text-[var(--gold-bright)] uppercase">
+        <p className="print-tier m-0 font-mono text-[10px] tracking-[0.18em] text-[var(--gold-bright)] uppercase">
           {tierName(discount)}
         </p>
-        <p className="mt-2 mb-0 font-serif text-[22px] leading-tight font-semibold break-words text-[var(--gold-bright)] sm:text-[24px]">
+        <p className="print-name mt-2 mb-0 font-serif text-[22px] leading-tight font-semibold break-words text-[var(--gold-bright)] sm:text-[24px]">
           {name || "Full name"}
         </p>
       </div>
